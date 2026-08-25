@@ -26,11 +26,15 @@ test['Sex_binario'] = test['Sex'].map(tranformar_sexo)
 train['Titulo'] = train['Name'].str.extract(r',\s*([^\.]*)\.') #r faz o python nao entender \s como codigo, '' é espaço para escrever, a virgula indica onde começa, o \s* diz para pular espaço vazio e zero
 test['Titulo'] = test['Name'].str.extract(r',\s*([^\.]*)\.') #() é o que deve ser devolvido, [^\.]* bate com qualquer sequencia de caracteres, desde que nao seja um ponto. \. bate com o ponto para encerrar
 
-encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) # Varre a coluna, identifica cada string unica e atribui numero sequencial
-train['Titulo_num'] = encoder.fit_transform(train[['Titulo']]) #fit registra a relaçao entre texto e o numero, transform substitui por ele, colchete duplo transforma a serie unidimensional em matriz bidimensional
-test['Titulo_num'] = encoder.transform(test[['Titulo']]) #substitui usando a matriz de relaçao construida antes
+train_titulo_dummies = pd.get_dummies(train['Titulo'], prefix='Titulo')
+test_titulo_dummies = pd.get_dummies(test['Titulo'], prefix = 'Titulo')
 
-variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'Titulo_num']
+test_titulo_dummies = test_titulo_dummies.reindex(columns=train_titulo_dummies.columns, fill_value=0)
+
+train = pd.concat([train, train_titulo_dummies], axis = 1)
+test = pd.concat([test, test_titulo_dummies], axis = 1)
+
+variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare'] + list(train_titulo_dummies.columns)
 
 X = train[variaveis].fillna(-1)
 y = train['Survived']
