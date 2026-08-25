@@ -34,6 +34,13 @@ test_titulo_dummies = test_titulo_dummies.reindex(columns=train_titulo_dummies.c
 train = pd.concat([train, train_titulo_dummies], axis = 1)
 test = pd.concat([test, test_titulo_dummies], axis = 1)
 
+#Adicionar tamanho da família 
+train['FamilySize'] = train['SibSp'] + train['Parch'] + 1
+test['FamilySize'] = test['SibSp'] + test['Parch'] + 1
+
+train['IsAlone'] = (train['FamilySize'] == 1).astype(int)
+test['IsAlone'] = (test['FamilySize'] == 1).astype(int)
+
 #Coletar Embarked
 train['Embarked'] = train['Embarked'].fillna(train['Embarked'].mode()[0])
 
@@ -45,7 +52,7 @@ test_embarked = test_embarked.reindex(columns = train_embarked.columns, fill_val
 train = pd.concat([train, train_embarked], axis = 1)
 test = pd.concat([test, test_embarked], axis =1 )
 
-variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
+variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'IsAlone'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
 
 X = train[variaveis].fillna(-1)
 y = train['Survived']
