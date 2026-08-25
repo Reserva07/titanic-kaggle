@@ -34,7 +34,18 @@ test_titulo_dummies = test_titulo_dummies.reindex(columns=train_titulo_dummies.c
 train = pd.concat([train, train_titulo_dummies], axis = 1)
 test = pd.concat([test, test_titulo_dummies], axis = 1)
 
-variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare'] + list(train_titulo_dummies.columns)
+#Coletar Embarked
+train['Embarked'] = train['Embarked'].fillna(train['Embarked'].mode()[0])
+
+train_embarked = pd.get_dummies(train['Embarked'], prefix = 'Embarked')
+test_embarked = pd.get_dummies(test['Embarked'], prefix = 'Embarked')
+
+test_embarked = test_embarked.reindex(columns = train_embarked.columns, fill_value= 0)
+
+train = pd.concat([train, train_embarked], axis = 1)
+test = pd.concat([test, test_embarked], axis =1 )
+
+variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
 
 X = train[variaveis].fillna(-1)
 y = train['Survived']
@@ -68,5 +79,5 @@ modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Terceiro_modelo.csv", header = True)
+sub.to_csv("Quarto_modelo.csv", header = True)
 
