@@ -11,6 +11,26 @@ from sklearn.preprocessing import OrdinalEncoder
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
+#Pega dado da cabine
+train['Deck'] = train['Cabin'].str[0]
+train['Deck'] = train['Deck'].fillna('Desconhecido')
+
+test['Deck'] = test['Cabin'].str[0]
+test['Deck'] = test['Deck'].fillna('Desconhecido')
+
+train['TemCabine'] = train['Cabin'].notna().astype(int)
+test['TemCabine'] = test['Cabin'].notna().astype(int)
+
+train_deck = pd.get_dummies(train['Deck'], prefix = 'Deck')
+test_deck = pd.get_dummies(test['Deck'], prefix = 'Deck')
+
+test_deck = test_deck.reindex(columns=train_deck.columns, fill_value=0)
+
+train = pd.concat([train, train_deck], axis = 1)
+test = pd.concat([test, test_deck], axis = 1)
+
+
+
 # Transforma o sexo em número
 def tranformar_sexo(valor):
     if valor == 'female':
@@ -52,7 +72,7 @@ test_embarked = test_embarked.reindex(columns = train_embarked.columns, fill_val
 train = pd.concat([train, train_embarked], axis = 1)
 test = pd.concat([test, test_embarked], axis =1 )
 
-variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'IsAlone'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
+variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'IsAlone', 'TemCabine'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
 
 X = train[variaveis].fillna(-1)
 y = train['Survived']
@@ -86,5 +106,5 @@ modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Quarto_modelo.csv", header = True)
+sub.to_csv("Quinto_modelo.csv", header = True)
 
