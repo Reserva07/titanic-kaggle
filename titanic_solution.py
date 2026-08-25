@@ -86,14 +86,14 @@ for linhas_treino, linhas_valid in kf.split(X, y):
     X_treino, X_valid = X.iloc[linhas_treino], X.iloc[linhas_valid]
     y_treino, y_valid = y.iloc[linhas_treino], y.iloc[linhas_valid]
 
-    modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0)
+    modelo = RandomForestClassifier(n_estimators=100, max_depth = 10, min_samples_leaf=4, n_jobs=-1, random_state=0)
     modelo.fit(X_treino, y_treino)
     p = modelo.predict(X_valid)
     acc = np.mean(y_valid == p)
     resultados.append(acc)
 
 plt.hist(resultados)
-plt.show()
+#plt.show()
 print(np.mean(resultados))
 
 modelo.fit(X, y)
@@ -106,5 +106,5 @@ modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Sexto_modelo.csv", header = True)
+sub.to_csv("Oitavo_modelo.csv", header = True)
 
