@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -72,7 +72,7 @@ test_embarked = test_embarked.reindex(columns = train_embarked.columns, fill_val
 train = pd.concat([train, train_embarked], axis = 1)
 test = pd.concat([test, test_embarked], axis =1 )
 
-variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'IsAlone', 'TemCabine'] + list(train_titulo_dummies.columns) + list(train_embarked.columns)
+variaveis= ['Sex_binario', 'Age', 'Pclass', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'IsAlone', 'TemCabine'] + list(train_titulo_dummies.columns) + list(train_embarked.columns) + list(train_deck.columns)
 
 X = train[variaveis].fillna(-1)
 y = train['Survived']
@@ -80,9 +80,9 @@ y = train['Survived']
 # Validaçao cruzada
 resultados = []
 
-kf = RepeatedKFold(n_splits=2, n_repeats=10, random_state=10)
+kf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=10)
 
-for linhas_treino, linhas_valid in kf.split(X):
+for linhas_treino, linhas_valid in kf.split(X, y):
     X_treino, X_valid = X.iloc[linhas_treino], X.iloc[linhas_valid]
     y_treino, y_valid = y.iloc[linhas_treino], y.iloc[linhas_valid]
 
@@ -106,5 +106,5 @@ modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Quinto_modelo.csv", header = True)
+sub.to_csv("Sexto_modelo.csv", header = True)
 
