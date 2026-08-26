@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.model_selection import GridSearchCV
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
@@ -82,11 +83,30 @@ resultados = []
 
 kf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=10)
 
+# Search for the best hyperparameters
+param_grid = {
+    'max_depth': [2, 4, 6, 8, 10, None],
+    'min_samples_leaf': [1, 3, 5, 7, 9, 10],
+}
+
+grid = GridSearchCV(
+    estimator = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0),
+    param_grid=param_grid,
+    cv=RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=10),
+    scoring='accuracy',
+    n_jobs=-1
+)
+grid.fit(X, y)
+print(grid.best_params_)
+
+b_params = grid.best_params_
+
+
 for linhas_treino, linhas_valid in kf.split(X, y):
     X_treino, X_valid = X.iloc[linhas_treino], X.iloc[linhas_valid]
     y_treino, y_valid = y.iloc[linhas_treino], y.iloc[linhas_valid]
 
-    modelo = RandomForestClassifier(n_estimators=100, max_depth = 10, min_samples_leaf=4, n_jobs=-1, random_state=0)
+    modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0, **b_params)
     modelo.fit(X_treino, y_treino)
     p = modelo.predict(X_valid)
     acc = np.mean(y_valid == p)
@@ -101,10 +121,10 @@ modelo.fit(X, y)
 X_prev = test[variaveis]
 X_prev = X_prev.fillna(-1)
 
-modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0)
+modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0, **b_params)
 modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Oitavo_modelo.csv", header = True)
+sub.to_csv("Nono_modelo.csv", header = True)
 
