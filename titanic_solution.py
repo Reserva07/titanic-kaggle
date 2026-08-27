@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import OrdinalEncoder
@@ -55,6 +55,12 @@ test_titulo_dummies = test_titulo_dummies.reindex(columns=train_titulo_dummies.c
 train = pd.concat([train, train_titulo_dummies], axis = 1)
 test = pd.concat([test, test_titulo_dummies], axis = 1)
 
+
+#impute Age by the median age for each title
+train['Age'] = train['Age'].fillna(train.groupby('Titulo')['Age'].transform('median'))
+test['Age'] = test['Age'].fillna(train.groupby('Titulo')['Age'].transform('median'))
+
+
 #Adicionar tamanho da família 
 train['FamilySize'] = train['SibSp'] + train['Parch'] + 1
 test['FamilySize'] = test['SibSp'] + test['Parch'] + 1
@@ -85,12 +91,13 @@ kf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=10)
 
 # Search for the best hyperparameters
 param_grid = {
-    'max_depth': [2, 4, 6, 8, 10, None],
-    'min_samples_leaf': [1, 3, 5, 7, 9, 10],
+    'max_depth': [2, 4, 6, 8, 10],
+    'learning_rate': [0.01, 0.03, 0.05, 0.1, 0.2, 0.3],
+    'n_estimators': [50, 100, 200, 300],
 }
 
 grid = GridSearchCV(
-    estimator = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0),
+    estimator = GradientBoostingClassifier(random_state=0),
     param_grid=param_grid,
     cv=RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=10),
     scoring='accuracy',
@@ -106,7 +113,7 @@ for linhas_treino, linhas_valid in kf.split(X, y):
     X_treino, X_valid = X.iloc[linhas_treino], X.iloc[linhas_valid]
     y_treino, y_valid = y.iloc[linhas_treino], y.iloc[linhas_valid]
 
-    modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0, **b_params)
+    modelo = GradientBoostingClassifier(n_estimators=100, random_state=0)
     modelo.fit(X_treino, y_treino)
     p = modelo.predict(X_valid)
     acc = np.mean(y_valid == p)
@@ -121,10 +128,10 @@ modelo.fit(X, y)
 X_prev = test[variaveis]
 X_prev = X_prev.fillna(-1)
 
-modelo = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0, **b_params)
+modelo = GradientBoostingClassifier(n_estimators=100, random_state=0)
 modelo.fit(X, y)
 p = modelo.predict(X_prev)
 
 sub = pd.Series(p, index=test['PassengerId'], name='Survived')
-sub.to_csv("Nono_modelo.csv", header = True)
+sub.to_csv("Decimo_segundo_modelo.csv", header = True)
 
